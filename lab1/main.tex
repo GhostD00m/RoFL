@@ -1,0 +1,276 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{mathtools}
+
+\DeclareMathOperator*{\NormalForm}{NormalForm}
+\DeclareMathOperator*{\GetCriticalPairs}{GetCriticalPairs}
+\DeclareMathOperator*{\Interreduce}{Interreduce}
+
+\title{Lab1}
+
+\begin{document}
+
+\maketitle
+
+\section{Problem Statement}
+
+Given the SRS over alphabet $\Sigma = \{a, b, c\}$:
+
+\begin{align*}
+&1.\ abbc \to cbba \\
+&2.\ accb \to bcca \\  
+&3.\ baac \to caab \\
+&4.\ cb \to bc \\
+&5.\ ca \to ab \\
+\end{align*}
+
+Determine: termination, finiteness of equivalence classes, local confluence, and Knuth-Bendix completability.
+
+\section{Termination Analysis}
+
+Let $M = \Sigma^*$ be the free monoid. Define the algebra:
+
+\[
+A = \langle M, F \rangle \quad \text{where} \quad F = \{\langle \varepsilon, 0\rangle, \langle a, 0\rangle, \langle b, 0\rangle, \langle c, 0\rangle, \langle ·, 2\rangle\}
+\]
+
+The operation $· : M \times M \to M$ is string concatenation.
+
+Define the order $\succ$ via the strictly monotonic function $f: M \to \mathbb{N}$:
+
+\[
+f(w) = \left(|w|_c + \sum_{i=1}^{n}\sum_{j=i+1}^{n}I[s_i = a]I[s_j = c]\right)^{|w|_c \cdot |w|_b+1} + \sum_{i=1}^{n}\sum_{j=i+1}^{n}I[s_i = c]I[s_j = b]
+\]
+
+The order is defined as: \\
+\[
+u \succ v \Leftrightarrow 
+\begin{cases}
+f(u) > f(v) \\
+\text{or} \\
+f(u) = f(v) \land u >_{\text{lex}} v
+\end{cases}
+\]
+
+where $>_{\text{lex}}$ is the lexicographic order with $a < b < c$.
+
+Compute function values for all rules:
+
+\begin{align*}
+&f(abbc) = 8 > f(cbba) = 3 \\
+&f(accb) = 66 > f(bcca) = 8 \\  
+&f(baac) = 27 > f(caab) = 2 \\
+&f(cb) = 2 > f(bc) = 1 \\
+&f(ca) = 1 > f(ab) = 0
+\end{align*}
+
+All rewrite rules decrease in this order. By the Main Theorem on TRS Termination, $\langle A, \succ \rangle$ is a WFMA compatible with the SRS, hence the system terminates.
+
+\section{Finiteness of Equivalence Classes}
+
+The system has \textbf{infinitely many equivalence classes} with respect to normal forms because word length is preserved by all rewrite rules:
+
+\begin{align*}
+&|abbc| = |cbba| = 4 \\
+&|accb| = |bcca| = 4 \\
+&|baac| = |caab| = 4 \\  
+&|cb| = |bc| = 2 \\
+&|ca| = |ab| = 2
+\end{align*}
+
+Since length is invariant and there exist irreducible words of arbitrary length, there are infinitely many distinct equivalence classes.
+
+\section{Local Confluence Analysis}
+
+The system is \textbf{not locally confluent}. \\
+Consider the critical pair $\langle (accb)[accb \to bcca], (accb)[cb \to bc] \rangle$:
+
+\begin{align*}
+&accb \to bcca \to  bcab \twoheadrightarrow babb\\
+&accb \to acbc \twoheadrightarrow abcc
+\end{align*}
+
+The normal forms $bcca$ and $abcc$ are distinct and irreducible, violating the unique normal form property.
+
+\section{Knuth-Bendix Completability}
+
+Given the SRS over alphabet $\Sigma = \{a, b, c\}$:
+
+\begin{align*}
+&1.\ abbc \to bbab \\
+&2.\ abcc \to babb \\  
+&3.\ baac \to abab \\
+&4.\ cb \to bc \\
+&5.\ ca \to ab \\
+\end{align*}
+
+\subsection{Initial Critical Pairs}
+
+\begin{enumerate}
+\item $\langle (abbcb)[abbc \mapsto bbab], (abbcb)[cb \mapsto bc] \rangle$
+\item $\langle (abbca)[abbc \mapsto bbab], (abbca)[ca \mapsto ab] \rangle$
+\item $\langle (abccb)[abcc \mapsto babb], (abccb)[cb \mapsto bc] \rangle$
+\item $\langle (abcca)[abcc \mapsto babb], (abcca)[ca \mapsto ab] \rangle$
+\item $\langle (baacb)[baac \mapsto abab], (baacb)[cb \mapsto bc] \rangle$
+\item $\langle (baaca)[baac \mapsto abab], (baaca)[ca \mapsto ab] \rangle$
+\item $\langle (cbaac)[cb \mapsto bc], (cbaac)[baac \mapsto abab] \rangle$
+\item $\langle (cabbc)[ca \mapsto ab], (cabbc)[abbc \mapsto bbab] \rangle$
+\item $\langle (cabcc)[ca \mapsto ab], (cabcc)[abcc \mapsto babb] \rangle$
+\end{enumerate}
+
+\subsection{Completion Process}
+
+\subsection{Pair 1: $\langle (abbcb)[abbc \mapsto bbab], (abbcb)[cb \mapsto bc] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle bbabb, abbbc \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle bbabb, abbbc \rangle$
+\item $f(bbabb) = 0$, $f(abbbc) = 16$
+\item Add rule: $abbbc \to bbabb$
+\item After interreduction: no changes to SRS
+\item New critical pairs: 10--12
+\end{itemize}
+
+\subsection{Pair 2: $\langle (abbca)[abbc \mapsto bbab], (abbca)[ca \mapsto ab] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle bbaba, abbab \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle bbaba, abbab \rangle$
+\item $f(bbaba) > f(abbab)$
+\item Add rule: $bbaba \to abbab$
+\item After interreduction: no changes to SRS
+\item New critical pairs: 13--16
+\end{itemize}
+
+\subsection{Pair 3: $\langle (abccb)[abcc \mapsto babb], (abccb)[cb \mapsto bc] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle babbb, abcbc \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle babbb, abbcc \rangle$
+\item $f(babbb) = 0$, $f(abbcc) = 1024$
+\item Add rule: $abbcc \to babbb$
+\item After interreduction: no changes to SRS
+\item New critical pairs: 17--20
+\end{itemize}
+
+\subsection{Pair 4: $\langle (abcca)[abcc \mapsto babb], (abcca)[ca \mapsto ab] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle babba, abcab \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle babba, ababb \rangle$
+\item $f(babba) > f(ababb)$
+\item Add rule: $babba \to ababb$
+\item After interreduction: no changes to SRS
+\item New critical pairs: 21--28
+\end{itemize}
+
+\subsection{Pair 5: $\langle (baacb)[baac \mapsto abab], (baacb)[cb \mapsto bc] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle ababb, baabc \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle ababb, baabc \rangle$
+\item $f(ababb) = 0$, $f(baabc) = 27$
+\item Add rule: $baabc \to ababb$
+\item After interreduction: no changes to SRS
+\item 6 new critical pairs added
+\end{itemize}
+
+\subsection{Pair 6: $\langle (baaca)[baac \mapsto abab], (baaca)[ca \mapsto ab] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle ababa, baaab \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle ababa, baaab \rangle$
+\item $f(ababa) < f(baaab)$
+\item Add rule: $baaab \to ababa$
+\item After interreduction: no changes to SRS
+\item 13 new critical pairs added
+\end{itemize}
+
+\subsection{Pair 7: $\langle (cbaac)[cb \mapsto bc], (cbaac)[baac \mapsto abab] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle bcaac, cabab \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle babac, abbab \rangle$
+\item $f(babac) = 27$, $f(abbab) = 0$
+\item Add rule: $babac \to abbab$
+\item After interreduction: no changes to SRS
+\item 6 new critical pairs added
+\end{itemize}
+
+\subsection{Pair 8: $\langle (cabbc)[ca \mapsto ab], (cabbc)[abbc \mapsto bbab] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle abbbc, cbbab \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle bbabb, bbabb \rangle$
+\item The pair is convergent; no new rule
+\end{itemize}
+
+\subsection{Pair 9: $\langle (cabcc)[ca \mapsto ab], (cabcc)[abcc \mapsto babb] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle abbcc, cbabb \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle babbb, babbb \rangle$
+\item The pair is convergent; no new rule
+\end{itemize}
+
+\subsection{Pair 10: $\langle (abbbcb)[abbbc \mapsto bbabb], (abbbcb)[cb \mapsto bc] \rangle$}
+
+\begin{itemize}
+\item $\langle t_1, t_2 \rangle = \langle bbabbb, abbbbc \rangle$
+\item $\langle t'_1, t'_2 \rangle = \langle bbabbb, abbbbc \rangle$
+\item $f(bbabbb) = 0$, $f(abbbbc) = 32$
+\item Add rule: $abbbbc \to bbabbb$
+\item After interreduction: no changes to SRS
+\item 6 new critical pairs added
+\end{itemize}
+
+\subsection{Additional Critical Pairs (11--28)}
+
+\begin{itemize}
+\item 11. $\langle (abbbca)[abbbc \mapsto bbabb], (abbbca)[ca \mapsto ab] \rangle$
+\item 12. $\langle (cabbbc)[ca \mapsto ab], (cabbbc)[abbbc \mapsto bbabb] \rangle$
+\item 13. $\langle (bbababbc)[bbaba \mapsto abbab], (bbababbc)[abbc \mapsto bbab] \rangle$
+\item 14. $\langle (bbababcc)[bbaba \mapsto abbab], (bbababcc)[abcc \mapsto babb] \rangle$
+\item 15. $\langle (bbabaac)[bbaba \mapsto abbab], (bbabaac)[baac \mapsto abab] \rangle$
+\item 16. $\langle (cbbaba)[cb \mapsto bc], (cbbaba)[bbaba \mapsto abbab] \rangle$
+\item 17. $\langle (abbccb)[abbcc \mapsto babbb], (abbccb)[cb \mapsto bc] \rangle$
+\item 18. $\langle (abbcca)[abbcc \mapsto babbb], (abbcca)[ca \mapsto ab] \rangle$
+\item 19. $\langle (cabbcc)[ca \mapsto ab], (cabbcc)[abbcc \mapsto babbb] \rangle$
+\item 20. $\langle (bbababbcc)[bbaba \mapsto abbab], (bbababbcc)[abbcc \mapsto babbb] \rangle$
+\item 21. $\langle (babbabbc)[babba \mapsto ababb], (babbabbc)[abbc \mapsto bbab] \rangle$
+\item 22. $\langle (babbabcc)[babba \mapsto ababb], (babbabcc)[abcc \mapsto babb] \rangle$
+\item 23. $\langle (babbaac)[babba \mapsto ababb], (babbaac)[baac \mapsto abab] \rangle$
+\item 24. $\langle (babbabbbc)[babba \mapsto ababb], (babbabbbc)[abbbc \mapsto bbabb] \rangle$
+\item 25. $\langle (babbaba)[babba \mapsto ababb], (babbaba)[bbaba \mapsto abbab] \rangle$
+\item 26. $\langle (babbabbcc)[babba \mapsto ababb], (babbabbcc)[abbcc \mapsto babbb] \rangle$
+\item 27. $\langle (cbabba)[cb \mapsto bc], (cbabba)[babba \mapsto ababb] \rangle$
+\item 28. $\langle (bbababba)[bbaba \mapsto abbab], (bbababba)[babba \mapsto ababb] \rangle$
+\end{itemize}
+
+\subsection{Current System State}
+
+The extended SRS after processing critical pairs 1--10:
+
+\begin{align*}
+&1.\ abbc \to bbab \\
+&2.\ abcc \to babb \\  
+&3.\ baac \to abab \\
+&4.\ cb \to bc \\
+&5.\ ca \to ab \\
+&6.\ abbbc \to bbabb \\
+&7.\ bbaba \to abbab \\
+&8.\ abbcc \to babbb \\
+&9.\ babba \to ababb \\
+&10.\ baabc \to ababb \\
+&11.\ baaab \to ababa \\
+&12.\ babac \to abbab \\
+&13.\ abbbbc \to bbabbb \\
+\end{align*}
+
+\section{Conclusion}
+
+The Knuth-Bendix completion procedure applied to the given string rewriting system exhibits strong evidence of non-termination.
+
+\end{document}

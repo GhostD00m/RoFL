@@ -1,1 +1,1 @@
-# RoFL
+A repository for laboratory work on the course "Theory of Formal Languages," completed as part of studies at Bauman Moscow State Technical University in the Department of Theoretical Informatics and Computer Technologies.
