@@ -46,110 +46,134 @@ def check_dfa(word, structure, start, finals):
 
 
 NFA_STRUCTURE = {
-    "S": {"a": ["a1"], "b": ["b8"], "c": ["c7"]},
-    "a1": {"a": ["a2"], "b": ["b3"]},
-    "a2": {"a": ["a2"], "b": ["b3"]},
-    "b3": {"b": ["b4"]},
-    "b4": {"b": ["b4"], "a": ["a5"]},
-    "a5": {"b": ["b6"]},
-    "b6": {"a": ["a1"], "c": ["c7"]},
-    "c7": {"b": ["b8"], "c": ["c7"]},
-    "b8": {"a": ["a9"]},
-    "a9": {"a": ["a12"], "b": ["b8"], "c": ["c11", "c16"]},
-    "b10": {"a": ["a12"], "b": ["b8", "b10"], "c": ["c11", "c16"]},
-    "c11": {"a": ["a14"]},
-    "a12": {"c": ["c13"]},
-    "c13": {"a": ["a14"]},
-    "a14": {"c": ["c15"]},
-    "c15": {"a": ["a12"], "b": ["b8", "b10"], "c": ["c11", "c16"]},
-    "c16": {"c": ["c17"]},
-    "c17": {"a": ["a20"], "b": ["b18"]},
-    "b18": {"b": ["b19"]},
-    "b19": {"a": ["a12"], "b": ["b8", "b10"], "c": ["c11", "c16"]},
-    "a20": {"b": ["b21"]},
-    "b21": {"a": ["a22"]},
-    "a22": {"b": ["b8", "b10"], "c": ["c11", "c16"]}
-}
-NFA_START = "S"
-NFA_FINALS = {"S", "b6", "c7", "a9", "b10", "b19", "a22", "c15"}
+    "1": {"c": ["1"], "a": ["2"], "b": ["5"]},
+    "2": {"a": ["2"], "b": ["3"]},
+    "3": {"b": ["3"], "a": ["4"]},
+    "4": {"b": ["1"]},
 
-SFA_STRUCTURE = {
-    "S": {"a": ["a1"], "b": ["b8"], "c": ["c7"]},
-    "a1": {"a": ["a2"], "b": ["b3"]},
-    "a2": {"a": ["a2"], "b": ["b3"]},
+    "5": {"a": ["6"]},
 
-    "b3": {"b": ["b3", "&"]},
+    "6": {"b": ["5", "6"], "a": ["7"], "": ["7"], "c": ["10"]},
 
-    "&": {"a": ["a4", "a5"]},
+    "7": {"c": ["8"]},
+    "8": {"a": ["9"]},
+    "9": {"c": ["6"]},
 
-    "a4": {"a": ["a4"], "b": ["b"]},
-    "b": {"c": ["c7"], "a": ["a1"]},
-
-    "a5": {"b": ["b6"]},
-    "b6": {"b": ["b6"], "a": ["a1"], "c": ["c7"]},
-
-    "c7": {"b": ["b8"], "c": ["c7"]},
-    "b8": {"a": ["a9"]},
-
-    "a9": {"a": ["a12"], "b": ["b8"], "c": ["c11", "c16"]},
-
-    "b10": {"a": ["a12"], "b": ["b8", "b10"], "c": ["c11", "c16"]},
-
-    "c11": {"a": ["a14"]},
-    "a12": {"c": ["c13"]},
-    "c13": {"a": ["a14"]},
-    "a14": {"c": ["c15"]},
-
-    "c15": {"a": ["a12"], "b": ["b8", "b10"], "c": ["c11", "c16"]},
-    "c16": {"c": ["c17"]},
-    "c17": {"a": ["a20"], "b": ["b18"]},
-    "b18": {"b": ["b19"]},
-
-    "b19": {"a": ["a12"], "b": ["b8", "b10"], "c": ["c11", "c16"]},
-    "a20": {"b": ["b21"]},
-    "b21": {"a": ["a22"]},
-
-    "a22": {"b": ["b8", "b10"], "c": ["c11", "c16"]}
+    "10": {"c": ["11"]},
+    "11": {"b": ["12"], "a": ["13"]},
+    "12": {"b": ["6"]},
+    "13": {"b": ["5"]}
 }
 
-SFA_START = "S"
-SFA_FINALS = {"S", "b6", "c7", "a9", "b10", "b19", "a22", "c15", "b"}
+NFA_START = "1"
+NFA_FINALS = {"1", "6"}
 
-AND_NODES = {"&"}
+
+def get_epsilon_closure(states, structure):
+    stack = list(states)
+    closure = set(states)
+
+    while stack:
+        state = stack.pop()
+        if state in structure and "" in structure[state]:
+            for next_state in structure[state][""]:
+                if next_state not in closure:
+                    closure.add(next_state)
+                    stack.append(next_state)
+    return closure
 
 
 def check_nfa(word, structure, start, finals):
-    current_states = {start}
+    current_states = get_epsilon_closure({start}, structure)
+
     for char in word:
         next_states = set()
         for state in current_states:
             if state in structure and char in structure[state]:
                 transitions = structure[state][char]
                 next_states.update(transitions)
-        current_states = next_states
-        if not current_states:
+
+        if not next_states:
             return False
+
+        current_states = get_epsilon_closure(next_states, structure)
+
     return bool(current_states & finals)
 
 
+SFA_STRUCTURE = {
+    "1": {"c": ["1"], "a": ["2"], "b": ["5"]},
+    "2": {"a": ["2"], "b": ["3"]},
+    "3": {"b": ["3"], "a": ["4"]},
+    "4": {"b": ["1"]},
+
+    "5": {"a": ["6", "14"]},
+
+    "6": {"b": ["5", "6"], "a": ["7"], "": ["7"], "c": ["10"]},
+    "7": {"c": ["8"]},
+    "8": {"a": ["9"]},
+    "9": {"c": ["6"]},
+
+    "10": {"c": ["11"]},
+    "11": {"b": ["12"], "a": ["13"]},
+    "12": {"b": ["6"]},
+    "13": {"b": ["5"]},
+
+    "14": {"c": ["15"], "a": ["14"], "b": ["14"]},
+    "15": {"c": ["14"], "a": ["15"], "b": ["15"]}
+}
+
+SFA_START = "1"
+SFA_FINALS = {"1", "6", "14"}
+AND_NODES = {"5"}
+
+
 def check_sfa(word, structure, start_state, finals, and_nodes):
-    def dfs(current_state, idx):
+    memo = {}
+
+    def dfs(current_state, idx, path):
+        state_key = (current_state, idx)
+
+        if state_key in memo:
+            return memo[state_key]
+
         if idx == len(word):
-            return current_state in finals
+            result = current_state in finals
+            if not result and current_state in structure and "" in structure[current_state]:
+                if (current_state, idx) not in path:
+                    new_path = path | {(current_state, idx)}
+                    if current_state in and_nodes:
+                        result = all(dfs(nxt, idx, new_path) for nxt in structure[current_state][""])
+                    else:
+                        result = any(dfs(nxt, idx, new_path) for nxt in structure[current_state][""])
+
+            memo[state_key] = result
+            return result
 
         char = word[idx]
 
-        if current_state not in structure or char not in structure[current_state]:
+        results_to_combine = []
+        is_and = current_state in and_nodes
+
+        if current_state in structure and "" in structure[current_state]:
+            if (current_state, idx) not in path:
+                new_path = path | {(current_state, idx)}
+                for nxt in structure[current_state][""]:
+                    results_to_combine.append(dfs(nxt, idx, new_path))
+
+        if current_state in structure and char in structure[current_state]:
+            for nxt in structure[current_state][char]:
+                results_to_combine.append(dfs(nxt, idx + 1, set()))
+
+        if not results_to_combine:
             return False
 
-        next_states = structure[current_state][char]
-
-        if current_state in and_nodes:
-            return all(dfs(nxt, idx + 1) for nxt in next_states)
+        if is_and:
+            return all(results_to_combine)
         else:
-            return any(dfs(nxt, idx + 1) for nxt in next_states)
+            return any(results_to_combine)
 
-    return dfs(start_state, 0)
+    return dfs(start_state, 0, set())
 
 
 print(f"{'WORD':<10} | {'REGEX':<7} | {'DFA':<7} | {'NFA':<7} | {'SWA':<7}")
@@ -165,4 +189,3 @@ for i in range(20):
 
     print(
         f"{w:<10} | {str(int(res_regex)):<7} | {str(int(res_dfa)):<7} | {str(int(res_nfa)):<7} | {str(int(res_sfa)):<7}")
-    
